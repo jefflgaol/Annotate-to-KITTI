@@ -16,6 +16,7 @@ from shutil import copyfile
 ix,iy = -1,-1 # Iintial mouse point coordinates
 # Prefixes: f -> first, l -> last
 fx, fy, lx, ly = -1,-1,-1,-1 # coordinates to keep track of mouse movement
+linex, liney = -1,-1
 draw = False # Enables only on left mouse click
 mask_prev = None # Keeps track of previous renderings
 mask = None # Mask for current rendering
@@ -35,7 +36,7 @@ def draw_annotation(event,x,y,flags,param):
     """
     # Declaring the following variables as global ensures that the changes
     # made in this function last out of the function
-    global ix,iy,draw, fx, fy, lx, ly
+    global ix,iy,draw, fx, fy, lx, ly, linex, liney
     global mask_prev, mask, obj_label, kitti_data_cell, kitti_data
     # As soon as left mouse button is clicked, store the initial mouse
     # pointer coordinates.
@@ -61,6 +62,10 @@ def draw_annotation(event,x,y,flags,param):
         lx = x
         ly = y
 
+    elif (event == cv2.EVENT_MOUSEMOVE):
+        linex = x
+        liney = y
+
 if __name__ == '__main__':
     datasetPath = input('Enter the path to dataset: ')
     current_path = getcwd()
@@ -76,7 +81,9 @@ if __name__ == '__main__':
     if(not exists(destination_annotations_path)):
         mkdir(destination_annotations_path)
     logf = open("logFile.log", "w")
-    for datasetImgFile in listdir(datasetPath):
+    list_dir = listdir(datasetPath)
+    list_dir.sort()
+    for datasetImgFile in list_dir:
         if isfile(join(datasetPath, datasetImgFile)):
             obj_label = obj_label_default
             filepath = datasetPath+'/'+datasetImgFile
@@ -96,6 +103,7 @@ if __name__ == '__main__':
             destFileName = datasetImgFile.split('.')[0]
             destAnnFile = destination_annotations_path + '/' + destFileName +'.txt'
             destImgFile = destination_images_path + '/' + datasetImgFile
+            
             if(exists(destAnnFile)):
                 logf.write("Annotation already exists for {0}\n".format(filepath))
                 continue
@@ -107,11 +115,15 @@ if __name__ == '__main__':
             check = 0 # Flag to stop annotation process
             cancel_check = 0 # Flag to skip annotation to next image
             while(1):
+                local_image = img.copy()
                 mask_ref = np.zeros((rows, columns, colors), dtype=np.uint8)
                 kitti_data_cell = dict()
                 if(fx != -1 and fy != -1 and lx != -1 and ly != -1):
                     cv2.rectangle(mask_ref,(fx,fy),(lx,ly),(0,200,0),-1)
-                cv2.imshow('image',cv2.addWeighted(img+mask+mask_ref, 0.7, img, 0.3, 0))
+                if(linex != -1 and liney != -1 ):
+                    local_image = cv2.line(local_image, (0,liney), (columns,liney), (0,255,0),1)
+                    local_image = cv2.line(local_image, (linex,0), (linex,rows), (0,255,0),1)
+                cv2.imshow('image',cv2.addWeighted(local_image + mask + mask_ref, 0.7, local_image, 0.3, 0))
                 k = cv2.waitKey(1) & 0xFF
                 if k == 27: # Stop annotating the dataset (Esc key)
                     check = 1
