@@ -1,4 +1,6 @@
-# annotate-to-KITTI
+# Annotate-to-KITTI
+Note from jefflgaol: I added mouse guidance functionality.
+
 #### Author: Sai Prajwal Kotamraju
 This repository hosts a python script that can be used to draw ground-truth bounding boxes for a given folder of images and generate corresponding annotations in KITTI Vision data format. Detailed information of KITTI Vision benchmark suite
 can be found [here](http://www.cvlibs.net/datasets/kitti/). Discussion on the data format of KITTI has been addressed in this [issue](https://github.com/NVIDIA/DIGITS/issues/992). KITTI data format can be used for training an object detection model using Nvidia's [DIGITS](https://devblogs.nvidia.com/deep-learning-object-detection-digits/), one of the most popular tools for developing deep learning models for object classification/detection/segmentation tasks.
